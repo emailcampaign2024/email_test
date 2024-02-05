@@ -77,8 +77,7 @@ export class CampaignService {
     
     const campaigns = await this.CampaignModel.findOneAndUpdate(
       { "leads.email": to },
-      { $set: { "leads.$.isActive": false } },
-      { new: true } // To return the modified document
+      { $set: { "leads.$.isActive": false } }
     ).exec();
     console.log(campaigns,"send deatils in mongodb");
     // Send mail using the selected transporter
@@ -106,18 +105,18 @@ export class CampaignService {
             }
           ]
         }
-      },
-      {
-        $addFields: {
-          leads: {
-            $filter: {
-              input: "$leads",
-              as: "lead",
-              cond: { $eq: ["$$lead.isActive", true] }
-            }
-          }
-        }
       }
+      // {
+      //   $addFields: {
+      //     leads: {
+      //       $filter: {
+      //         input: "$leads",
+      //         as: "lead",
+      //         cond: { $eq: ["$$lead.isActive", true] }
+      //       }
+      //     }
+      //   }
+      // }
     ];
     
     const campaigns = await this.CampaignModel.aggregate(pipeline).exec();
@@ -129,7 +128,6 @@ export class CampaignService {
 
     const scheduler = campaigns[0].scheduler;
     const senderIds = campaigns[0].scheduler.senderIds.selectedSenders;
-   
     await this.scheduleEmail(subject, description, scheduler, lead);
    return campaigns  
   } else {
@@ -139,63 +137,34 @@ export class CampaignService {
 
   scheduleEmail(subject: string, description: string, scheduler:any, lead:any) {
  
-    // console.log(subject,description,scheduler,lead,"555555555555");
-
-    // const rampUpCount = parseInt(scheduler.rampUpCount, 10);
-    // const leads = lead;
-
-
-    // const startTimeParts = scheduler.startTime.split(':');
-    // const startHour = parseInt(startTimeParts[0], 10);
-    // const startMinute = parseInt(startTimeParts[1], 10);
-
-    // const scheduledDate = new Date(); 
-    // scheduledDate.setHours(startHour, startMinute, 0, 0);
-
-    // const rule = new schedule.RecurrenceRule();
-    // rule.hour = { start: startHour, end: 23, step: rampUpCount };
-    // rule.minute = startMinute;
-
-    // const job = schedule.scheduleJob(scheduledDate, () => {
-    //   for (const lead of leads) {
-    //     console.log(`Name: ${lead.name}, Email: ${lead.email}`);
-    //     try {
-    //       // this.sendMail(lead.email, subject, description);
-    //       console.log('Email sent successfully!');
-    //     } catch (error) {
-    //       console.error('Error sending email:', error);
-    //     }
-       
-    //   }
-    // });
-
-    // console.log(`Job scheduled at: ${scheduledDate}`);
-    const leads = lead;
     const rampUpCount = parseInt(scheduler.rampUpCount, 10);
+    const leads = lead;
+
+
     const startTimeParts = scheduler.startTime.split(':');
     const startHour = parseInt(startTimeParts[0], 10);
     const startMinute = parseInt(startTimeParts[1], 10);
-  
-    const scheduledDate = new Date();
+
+    const scheduledDate = new Date(); 
     scheduledDate.setHours(startHour, startMinute, 0, 0);
-  
+
     const rule = new schedule.RecurrenceRule();
     rule.hour = { start: startHour, end: 23, step: rampUpCount };
     rule.minute = startMinute;
-  
-    const job = schedule.scheduleJob(rule, async () => {
-      for (const lead of leads) {
-        console.log(`Name: ${leads.name}, Email: ${leads.email}`);
-        try {
-          await this.sendMail(leads.email, subject, description);
 
+    const job = schedule.scheduleJob(scheduledDate, () => {
+      for (const lead of leads) {
+        console.log(`Name: ${lead.name}, Email: ${lead.email}`);
+        try {
+          this.sendMail(lead.email, subject, description);
           console.log('Email sent successfully!');
         } catch (error) {
           console.error('Error sending email:', error);
         }
+       
       }
     });
-  
+
     console.log(`Job scheduled at: ${scheduledDate}`);
   }
 
