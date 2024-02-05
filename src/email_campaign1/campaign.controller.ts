@@ -1,0 +1,39 @@
+import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { CampaignService } from './campaign.service';
+import { Campaign } from './campaign.schema';
+
+@Controller('campaigns')
+export class CampaignController {
+  constructor(private readonly campaignService: CampaignService) {}
+
+  // @Get()
+  // async getAllMainStructures(): Promise<Campaign[]> {
+  //   return this.campaignService.getAllMainStructures();
+  // }
+
+  @Get(':id')
+  async getMainStructureById(@Param('id') id: string): Promise<Campaign> {
+    return this.campaignService.getMainStructureById(id);
+  }
+
+  @Post('create')
+  async createMainStructure(@Body() mainStructure: Campaign): Promise<Campaign> {
+    return this.campaignService.createMainStructure(mainStructure);
+  }
+
+  @Patch(':id')
+  async updateMainStructure(@Param('id') id: string, @Body() mainStructure: Campaign): Promise<Campaign> {
+    return this.campaignService.updateMainStructure(id, mainStructure);
+  }
+
+  @Delete(':id')
+  async deleteMainStructure(@Param('id') id: string): Promise<void> {
+    return this.campaignService.deleteMainStructure(id);
+  }
+
+  @Get()
+   async getAllCampaigns(): Promise<Campaign[]> {
+     return this.campaignService.getAllCampaigns();
+}
+
+}
