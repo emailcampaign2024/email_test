@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/commo
 import { CampaignService } from './campaign.service';
 import { Campaign } from './campaign.schema';
 
-@Controller('campaigns')
+@Controller('emailcampaigns')
 export class CampaignController {
   constructor(private readonly campaignService: CampaignService) {}
 
@@ -16,9 +16,15 @@ export class CampaignController {
     return this.campaignService.getMainStructureById(id);
   }
 
-  @Post('create')
+  // @Post('create')
+  // async createMainStructure(@Body() mainStructure: Campaign): Promise<Campaign> {
+  //   return this.campaignService.createMainStructure(mainStructure);
+  // }
+  @Post('save')
   async createMainStructure(@Body() mainStructure: Campaign): Promise<Campaign> {
-    return this.campaignService.createMainStructure(mainStructure);
+    const createdCampaign = await this.campaignService.createMainStructure(mainStructure);
+    await this.getAllCampaigns(); 
+    return createdCampaign;
   }
 
   @Patch(':id')
